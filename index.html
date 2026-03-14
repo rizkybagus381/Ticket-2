@@ -3,9 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pemesanan Tiket Online</title>
+    <title>Pemesanan Tiket & Pengiriman Email</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 1. Import Library EmailJS -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+        // Inisialisasi EmailJS dengan Public Key kamu
+        (function() {
+            emailjs.init("2EJLv0x3aQtzNDazt"); 
+        })();
+    </script>
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center p-4 font-sans relative">
 
@@ -15,36 +24,35 @@
 
     <!-- Container Utama Form -->
     <div class="max-w-md w-full bg-white rounded-3xl shadow-xl overflow-hidden">
-        
-        <!-- Header / Banner -->
         <div class="bg-blue-600 p-6 text-center">
             <h1 class="text-2xl font-bold text-white mb-1">Pesan Tiketmu!</h1>
-            <p class="text-blue-100 text-sm">Isi data di bawah ini dengan benar.</p>
+            <p class="text-blue-100 text-sm">Tiket akan dikirimkan ke email Anda.</p>
         </div>
 
-        <!-- Form Section -->
         <div class="p-8">
             <form id="form-pemesanan" class="space-y-5">
                 
-                <!-- Input Nama -->
                 <div>
                     <label for="nama" class="block text-sm font-semibold text-gray-700 mb-1">Nama Lengkap</label>
                     <input type="text" id="nama" required placeholder="Contoh: Budi Santoso" 
-                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-gray-50 focus:bg-white">
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all bg-gray-50 focus:bg-white">
+                </div>
+
+                <div>
+                    <label for="email" class="block text-sm font-semibold text-gray-700 mb-1">Email Anda (Untuk pengiriman tiket)</label>
+                    <input type="email" id="email" required placeholder="email.anda@gmail.com" 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all bg-gray-50 focus:bg-white">
                 </div>
                 
-                <!-- Input Jenis & Jumlah -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label for="jenis" class="block text-sm font-semibold text-gray-700 mb-1">Jenis Tiket</label>
-                        <select id="jenis" required 
-                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 focus:bg-white transition-all cursor-pointer">
+                        <select id="jenis" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-gray-50 focus:bg-white transition-all cursor-pointer">
                             <option value="Reguler">Reguler</option>
                             <option value="VIP">VIP</option>
                             <option value="VVIP">VVIP</option>
                         </select>
                     </div>
-                    
                     <div>
                         <label for="jumlah" class="block text-sm font-semibold text-gray-700 mb-1">Jumlah</label>
                         <input type="number" id="jumlah" required min="1" max="10" value="1" 
@@ -52,7 +60,6 @@
                     </div>
                 </div>
 
-                <!-- Box Total Harga -->
                 <div class="bg-blue-50 p-4 rounded-xl mt-6 flex justify-between items-center border border-blue-100">
                     <div class="flex flex-col">
                         <span class="text-xs font-semibold text-blue-600 uppercase tracking-wider">Total Pembayaran</span>
@@ -61,29 +68,20 @@
                     <span id="total-harga" class="text-xl font-bold text-blue-700">Rp 50.000</span>
                 </div>
                 
-                <!-- Tombol Submit -->
                 <button type="submit" id="btn-submit"
-                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 mt-4 flex justify-center items-center gap-2">
-                    <span>Konfirmasi Pesanan</span>
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-xl shadow-md transition-all duration-200 mt-4 flex justify-center items-center gap-2">
+                    <span>Pesan & Kirim Tiket</span>
                 </button>
             </form>
         </div>
-        
     </div>
 
-    <!-- Script Firebase & Logika Aplikasi -->
+    <!-- Script Firebase & Logika -->
     <script type="module">
-        // Hanya import yang diperlukan untuk mengirim data (write-only)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { 
-            getFirestore, 
-            collection, 
-            addDoc, 
-            serverTimestamp 
-        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // Konfigurasi Firebase kamu
+        // Konfigurasi Firebase Anda
         const firebaseConfig = {
             apiKey: "AIzaSyBPzVaOwVo7Vny6Zd1Hfuyn21neRAH5GQs",
             authDomain: "absen-fa8b4.firebaseapp.com",
@@ -94,12 +92,10 @@
             measurementId: "G-M8P1JXK4XZ"
         };
 
-        // Inisialisasi
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const tiketCollection = collection(db, "pesanan_tiket");
 
-        // Referensi DOM
         const formPemesanan = document.getElementById('form-pemesanan');
         const notifikasi = document.getElementById('notifikasi');
         const btnSubmit = document.getElementById('btn-submit');
@@ -108,99 +104,75 @@
         const totalHargaPreview = document.getElementById('total-harga');
         const detailHargaPreview = document.getElementById('detail-harga');
 
-        // Daftar Harga
-        const daftarHarga = {
-            'Reguler': 50000,
-            'VIP': 100000,
-            'VVIP': 200000
-        };
+        const daftarHarga = { 'Reguler': 50000, 'VIP': 100000, 'VVIP': 200000 };
+        const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
 
-        // Format Uang Rupiah
-        const formatRupiah = (angka) => {
-            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
-        };
-
-        // Fungsi Hitung Total Harga Real-time
         function hitungTotal() {
-            const jenis = jenisInput.value;
+            const hargaSatuan = daftarHarga[jenisInput.value];
             const jumlah = parseInt(jumlahInput.value) || 0;
-            const hargaSatuan = daftarHarga[jenis];
-            const total = hargaSatuan * jumlah;
-            
-            totalHargaPreview.textContent = formatRupiah(total);
+            totalHargaPreview.textContent = formatRupiah(hargaSatuan * jumlah);
             detailHargaPreview.textContent = `${jumlah} x ${formatRupiah(hargaSatuan)}`;
         }
 
-        // Listener Perubahan Input
         jenisInput.addEventListener('change', hitungTotal);
         jumlahInput.addEventListener('input', hitungTotal);
 
-        // Fungsi Tampilkan Notifikasi
-        let notifTimeout;
         function tampilkanPesan(pesan, tipe = 'sukses') {
-            clearTimeout(notifTimeout);
             notifikasi.textContent = pesan;
-            notifikasi.classList.remove('hidden', 'bg-green-500', 'bg-red-500', 'translate-y-[-1rem]', 'opacity-0');
-            
-            if (tipe === 'sukses') {
-                notifikasi.classList.add('bg-green-500');
-            } else {
-                notifikasi.classList.add('bg-red-500');
-            }
-
-            // Animasi masuk
+            notifikasi.className = `fixed top-6 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-full text-white font-medium shadow-lg transition-all duration-300 ${tipe === 'sukses' ? 'bg-green-500' : 'bg-red-500'} translate-y-0 opacity-100`;
             setTimeout(() => {
-                notifikasi.classList.add('translate-y-0', 'opacity-100');
-            }, 10);
-
-            // Animasi keluar
-            notifTimeout = setTimeout(() => {
-                notifikasi.classList.remove('translate-y-0', 'opacity-100');
-                notifikasi.classList.add('translate-y-[-1rem]', 'opacity-0');
-                setTimeout(() => notifikasi.classList.add('hidden'), 300);
-            }, 3000);
+                notifikasi.classList.replace('translate-y-0', '-translate-y-4');
+                notifikasi.classList.replace('opacity-100', 'opacity-0');
+            }, 5000);
         }
 
-        // Proses Pengiriman Form ke Firebase
         formPemesanan.addEventListener('submit', async (e) => {
             e.preventDefault(); 
             
-            // State Tombol Loading
-            const originalBtnContent = btnSubmit.innerHTML;
-            btnSubmit.innerHTML = `
-                <svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                Memproses...
-            `;
+            btnSubmit.innerHTML = "Menyimpan & Mengirim Email...";
             btnSubmit.disabled = true;
-            btnSubmit.classList.add('opacity-75', 'cursor-not-allowed');
 
             const nama = document.getElementById('nama').value;
+            const email = document.getElementById('email').value;
             const jenis = jenisInput.value;
             const jumlah = parseInt(jumlahInput.value);
             const totalHarga = daftarHarga[jenis] * jumlah;
 
             try {
-                // Simpan dokumen ke Firebase Firestore
+                // 1. Simpan ke Firebase Database
                 await addDoc(tiketCollection, {
                     nama: nama,
+                    email: email, 
                     jenis: jenis,
                     jumlah: jumlah,
                     totalHarga: totalHarga,
                     waktuPesan: serverTimestamp() 
                 });
+
+                // 2. Kirim Email pakai EmailJS
+                const templateParams = {
+                    to_name: nama,
+                    to_email: email,
+                    jenis_tiket: jenis,
+                    jumlah_tiket: jumlah,
+                    harga_satuan: formatRupiah(daftarHarga[jenis]), 
+                    total_harga: formatRupiah(totalHarga),
+                    order_id: "TKT-" + Math.floor(Math.random() * 1000000) 
+                };
+
+                // Menggunakan Template ID yang baru (template_jzzx5pg)
+                await emailjs.send('service_g79vc44', 'template_jzzx5pg', templateParams);
                 
-                tampilkanPesan('🎉 Tiket berhasil dipesan!');
+                tampilkanPesan('🎉 Pesanan berhasil! Cek email Anda untuk detail tiket.');
                 formPemesanan.reset(); 
-                hitungTotal(); // Reset tulisan harga ke default
+                hitungTotal();
                 
             } catch (error) {
-                console.error("Error menyimpan pesanan:", error);
-                tampilkanPesan('Gagal memesan tiket. Silakan coba lagi.', 'error');
+                console.error("Error Detail:", error);
+                tampilkanPesan('Data tersimpan, tapi gagal mengirim email. Cek koneksi.', 'error');
             } finally {
-                // Kembalikan Tombol seperti semula
-                btnSubmit.innerHTML = originalBtnContent;
+                btnSubmit.innerHTML = "Pesan & Kirim Tiket";
                 btnSubmit.disabled = false;
-                btnSubmit.classList.remove('opacity-75', 'cursor-not-allowed');
             }
         });
     </script>
